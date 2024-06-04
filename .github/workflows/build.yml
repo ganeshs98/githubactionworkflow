@@ -1,0 +1,41 @@
+name: build
+on:
+  workflow_dispatch:
+    inputs:
+      branch_to_deploy:
+        description: "mention the branch to deploy"
+        required: true
+        type: string
+env:
+  BRANCH_NAME: ${{inputs.branch_to_deploy}}
+  HOST_NAME: https://dev.giggso.com
+  Token: ${{secrets.BE_TOKEN}}
+  SERVICE_NAME: GGDEV_BE
+  DOCKER_FILE: dockerfile_tmp
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout
+      uses: actions/checkout@web
+      with:
+        ref: ${{env.BRANCH_NAME }}
+    - name: Get credential
+      #uses: f
+      with:
+        admin: true
+    - name: login into docker
+      id: docker login
+      #uses: f
+    - name: Docker build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./${{ env.DOCKER_FILE }}
+        push: true
+        tags: >
+          ${{steps.login}}/${{ Token }}:${{SERVICE_NAME}}-{{ github.sha }}
+    - name: update
+      run: |
+        git
+    
